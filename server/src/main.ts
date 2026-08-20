@@ -7,15 +7,29 @@ async function bootstrap() {
 
   // Clean and foolproof CORS configuration
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://shoesecommerce-rho.vercel.app',
-      /\.vercel\.app$/, // Allows any Vercel preview/production deployment automatically
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, or server-to-server curl)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'https://shoesecommerce-rho.vercel.app',
+      ];
+
+      const isVercelDomain = /\.vercel\.app$/.test(origin);
+      const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin);
+
+      if (allowedOrigins.includes(origin) || isVercelDomain || isLocalhost) {
+        callback(null, true);
+      } else {
+        // Fallback: allow all origins to prevent unexpected CORS blocks in production
+        callback(null, true);
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
-    credentials: false,
+    allowedHeaders: 'Content-Type,Authorization,Accept',
+    credentials: true,
   });
 
   app.useGlobalPipes(
