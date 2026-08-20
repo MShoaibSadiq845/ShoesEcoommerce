@@ -25,7 +25,7 @@ export interface CreateProductInput {
 export const productsApi = createApi({
   reducerPath: 'productsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://localhost:5000/products',
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/products`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
       if (token) {
