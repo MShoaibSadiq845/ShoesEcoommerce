@@ -15,6 +15,22 @@ export class AddToCartDto {
   @IsString()
   @IsOptional()
   size?: string;
+
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsNumber()
+  @IsOptional()
+  price?: number;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
 }
 
 export class UpdateCartItemDto {
@@ -34,7 +50,18 @@ export class CartController {
 
   @Post()
   async addToCart(@Body() body: AddToCartDto): Promise<CartState> {
-    return this.cartService.addToCart(body.productId, body.quantity || 1, body.size || 'US 10');
+    return this.cartService.addToCart(
+      body.productId,
+      body.quantity || 1,
+      body.size || 'US 10',
+      'guest',
+      {
+        name: body.name,
+        price: body.price,
+        imageUrl: body.imageUrl,
+        category: body.category,
+      },
+    );
   }
 
   @Patch(':itemId')

@@ -3,6 +3,10 @@ export declare class AddToCartDto {
     productId: string;
     quantity?: number;
     size?: string;
+    name?: string;
+    price?: number;
+    imageUrl?: string;
+    category?: string;
 }
 export declare class UpdateCartItemDto {
     quantity: number;

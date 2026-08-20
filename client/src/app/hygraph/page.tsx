@@ -101,10 +101,15 @@ export default function HygraphProductsPage() {
     }
 
     try {
+      const img = product.image?.url || '/images/4.png';
       await addToCart({
         productId: product.id,
         quantity: 1,
         size: 'US 10',
+        name: product.name,
+        price: Number(product.price),
+        imageUrl: img,
+        category: product.category || 'FOOTWEAR',
       }).unwrap();
       toast.success(`${product.name} added to cart!`);
     } catch (err) {
@@ -260,12 +265,14 @@ export default function HygraphProductsPage() {
 
                   {/* Product Image Showcase */}
                   <div className="relative w-full h-56 bg-slate-50 rounded-2xl flex items-center justify-center p-4 mb-4 group-hover:bg-slate-100/80 transition-colors">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={imageUrl}
                       alt={product.name}
-                      width={240}
-                      height={190}
                       className="object-contain max-h-44 drop-shadow-xl group-hover:scale-110 transition-transform duration-500 ease-out"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/4.png';
+                      }}
                     />
                   </div>
 

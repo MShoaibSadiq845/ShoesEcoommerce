@@ -35,6 +35,26 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], AddToCartDto.prototype, "size", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], AddToCartDto.prototype, "name", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], AddToCartDto.prototype, "price", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], AddToCartDto.prototype, "imageUrl", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], AddToCartDto.prototype, "category", void 0);
 class UpdateCartItemDto {
 }
 exports.UpdateCartItemDto = UpdateCartItemDto;
@@ -51,7 +71,12 @@ let CartController = class CartController {
         return this.cartService.getCart();
     }
     async addToCart(body) {
-        return this.cartService.addToCart(body.productId, body.quantity || 1, body.size || 'US 10');
+        return this.cartService.addToCart(body.productId, body.quantity || 1, body.size || 'US 10', 'guest', {
+            name: body.name,
+            price: body.price,
+            imageUrl: body.imageUrl,
+            category: body.category,
+        });
     }
     updateCartItem(itemId, body) {
         return this.cartService.updateCartItem(itemId, body.quantity);

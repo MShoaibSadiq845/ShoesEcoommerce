@@ -48,18 +48,20 @@ let CartService = class CartService {
         }
         return this.toCartState(items);
     }
-    async addToCart(productId, quantity = 1, size = 'US 10', userId = 'guest') {
-        const product = await this.productsService.getProductById(productId);
-        if (!product) {
-            throw new common_1.NotFoundException(`Product with ID ${productId} not found`);
+    async addToCart(productId, quantity = 1, size = 'US 10', userId = 'guest', productData) {
+        let product = null;
+        try {
+            product = await this.productsService.getProductById(productId);
         }
+        catch (e) {
+        }
+        const name = product?.name || productData?.name || 'Footwear Product';
+        const price = product?.price ?? productData?.price ?? 120;
+        const imageUrl = product?.imageUrl || productData?.imageUrl || '/images/4.png';
+        const category = product?.category || productData?.category || 'FOOTWEAR';
+        const productId_ = product?._id?.toString() || productId;
         const items = this.getItems(userId);
-        const existingIndex = items.findIndex((item) => item.productId === productId && item.size === size);
-        const productId_ = product._id?.toString() || productId;
-        const imageUrl = product.imageUrl;
-        const name = product.name;
-        const price = product.price;
-        const category = product.category;
+        const existingIndex = items.findIndex((item) => item.productId === productId_ && item.size === size);
         if (existingIndex > -1) {
             const existing = items[existingIndex];
             const newQty = existing.quantity + quantity;

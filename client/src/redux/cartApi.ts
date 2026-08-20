@@ -24,6 +24,10 @@ export interface AddToCartRequest {
   productId: string;
   quantity?: number;
   size?: string;
+  name?: string;
+  price?: number;
+  imageUrl?: string;
+  category?: string;
 }
 
 export interface UpdateCartItemRequest {

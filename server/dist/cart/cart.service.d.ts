@@ -24,7 +24,12 @@ export declare class CartService {
     private getItems;
     private toCartState;
     getCart(userId?: string): CartState;
-    addToCart(productId: string, quantity?: number, size?: string, userId?: string): Promise<CartState>;
+    addToCart(productId: string, quantity?: number, size?: string, userId?: string, productData?: {
+        name?: string;
+        price?: number;
+        imageUrl?: string;
+        category?: string;
+    }): Promise<CartState>;
     updateCartItem(itemId: string, quantity: number, userId?: string): CartState;
     removeCartItem(itemId: string, userId?: string): CartState;
     clearCart(userId?: string): CartState;
