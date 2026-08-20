@@ -36,6 +36,7 @@ const navLinks = [
   { label: 'WOMAN', href: '/?category=woman' },
   { label: 'MEN', href: '/?category=men' },
   { label: 'ALL', href: '/' },
+  { label: 'HYGRAPH CMS', href: '/hygraph' },
 ];
 
 export default function Navbar() {

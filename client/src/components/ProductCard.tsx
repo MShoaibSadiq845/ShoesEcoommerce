@@ -28,7 +28,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [addToCart, { isLoading }] = useAddToCartMutation();
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (!isAuthenticated) {
       toast.error('Please log in to add items to your cart!');
       router.push('/login');
@@ -51,7 +52,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card
       elevation={0}
+      onClick={() => router.push(`/product/${product.id}`)}
       sx={{
+        cursor: 'pointer',
         borderRadius: '18px',
         bgcolor: '#efefef',
         boxShadow: '5px 5px 25px rgba(0, 0, 0, 0.15)',

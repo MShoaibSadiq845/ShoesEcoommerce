@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   Container,
   Grid,
@@ -19,6 +20,7 @@ import ProductCard from './ProductCard';
 import { useGetProductsQuery } from '../redux/productsApi';
 
 export default function ProductList() {
+  const router = useRouter();
   const { data: products, isLoading, isError } = useGetProductsQuery();
 
   return (
@@ -84,7 +86,12 @@ export default function ProductList() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
+              onClick={() => {
+                const item = products?.find((p) => p.name.toLowerCase().includes('jordan')) || products?.[0];
+                if (item) router.push(`/product/${item.id}`);
+              }}
               sx={{
+                cursor: 'pointer',
                 p: { xs: 2.5, sm: 3 },
                 borderRadius: '20px',
                 bgcolor: '#ffffff',
@@ -95,6 +102,8 @@ export default function ProductList() {
                 minHeight: 150,
                 position: 'relative',
                 overflow: 'visible',
+                transition: 'transform 0.2s ease',
+                '&:hover': { transform: 'translateY(-4px)' },
               }}
             >
               <Box sx={{ zIndex: 2 }}>
@@ -152,7 +161,12 @@ export default function ProductList() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               elevation={0}
+              onClick={() => {
+                const item = products?.find((p) => p.name.toLowerCase().includes('200')) || products?.[1] || products?.[0];
+                if (item) router.push(`/product/${item.id}`);
+              }}
               sx={{
+                cursor: 'pointer',
                 p: { xs: 2.5, sm: 3 },
                 borderRadius: '20px',
                 bgcolor: '#ffffff',
@@ -163,6 +177,8 @@ export default function ProductList() {
                 minHeight: 150,
                 position: 'relative',
                 overflow: 'visible',
+                transition: 'transform 0.2s ease',
+                '&:hover': { transform: 'translateY(-4px)' },
               }}
             >
               <Box sx={{ zIndex: 2 }}>

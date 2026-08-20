@@ -170,7 +170,13 @@ export default function CartPage() {
                   <Paper
                     key={item.id}
                     elevation={0}
+                    onClick={() => {
+                      if (item.productId) {
+                        router.push(`/product/${item.productId}`);
+                      }
+                    }}
                     sx={{
+                      cursor: 'pointer',
                       p: 3,
                       borderRadius: '18px',
                       bgcolor: '#ffffff',
@@ -179,6 +185,11 @@ export default function CartPage() {
                       flexDirection: { xs: 'column', sm: 'row' },
                       alignItems: 'center',
                       gap: 3,
+                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                      },
                     }}
                   >
                     {/* Product Image */}
@@ -238,7 +249,10 @@ export default function CartPage() {
                       >
                         <IconButton
                           size="small"
-                          onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuantityChange(item.id, item.quantity, -1);
+                          }}
                           disabled={isUpdating || isRemoving}
                         >
                           <Remove fontSize="small" />
@@ -248,7 +262,10 @@ export default function CartPage() {
                         </Typography>
                         <IconButton
                           size="small"
-                          onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleQuantityChange(item.id, item.quantity, 1);
+                          }}
                           disabled={isUpdating || isRemoving}
                         >
                           <Add fontSize="small" />
@@ -260,7 +277,10 @@ export default function CartPage() {
                           ${item.itemTotal.toFixed(2)}
                         </Typography>
                         <IconButton
-                          onClick={() => handleRemoveItem(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveItem(item.id);
+                          }}
                           disabled={isRemoving}
                           sx={{ color: '#999', '&:hover': { color: '#ff3939' } }}
                         >
