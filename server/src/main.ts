@@ -7,10 +7,12 @@ async function bootstrap() {
 
   // Enable CORS for Next.js frontend
   app.enableCors({
-    origin: ["http://localhost:3000",
-      "https://shoesecommerce-rho.vercel.app/"
+    origin: [
+      'http://localhost:3000',
+      'https://shoesecommerce-rho.vercel.app',  // no trailing slash!
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
   });
 
   app.useGlobalPipes(
