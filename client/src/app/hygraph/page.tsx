@@ -1,99 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import toast from 'react-hot-toast';
 import { useAddToCartMutation } from '../../redux/cartApi';
+import { useGetProductsQuery, Product } from '../../redux/productsApi';
 import { useAppSelector } from '../../redux/hooks';
 import { useRouter } from 'next/navigation';
-
-export interface HygraphImage {
-  url: string;
-}
-
-export interface HygraphProduct {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  category: string;
-  tag: string;
-  brand: string;
-  image: HygraphImage | null;
-}
-
-const GET_PRODUCTS_QUERY = `
-  query GetHygraphProducts {
-    productsses {
-      id
-      name
-      price
-      description
-      category
-      tag
-      brand
-      image {
-        url
-      }
-    }
-  }
-`;
 
 export default function HygraphProductsPage() {
   const router = useRouter();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
 
-  const [products, setProducts] = useState<HygraphProduct[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: products = [], isLoading: loading, isError, refetch } = useGetProductsQuery();
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
-  const fetchHygraphProducts = async () => {
-    setLoading(true);
-    setError(null);
-    const endpoint =
-      process.env.NEXT_PUBLIC_HYGRAPH_ENDPOINT ||
-      'https://ap-south-1.cdn.hygraph.com/content/cmt18xrox03nv07uus0lgp5sp/master';
-
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: GET_PRODUCTS_QUERY,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Hygraph API error: ${res.statusText}`);
-      }
-
-      const json = await res.json();
-      if (json.errors && json.errors.length > 0) {
-        throw new Error(json.errors[0].message);
-      }
-
-      const fetchedData: HygraphProduct[] = json?.data?.productsses || [];
-      setProducts(fetchedData);
-    } catch (err: any) {
-      console.error('Failed to fetch from Hygraph:', err);
-      setError(err?.message || 'Failed to load products from Hygraph CMS');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchHygraphProducts();
-  }, []);
-
-  const handleAddToCart = async (product: HygraphProduct) => {
+  const handleAddToCart = async (product: Product) => {
     if (!isAuthenticated) {
       toast.error('Please log in to add items to your cart!');
       router.push('/login');
@@ -101,7 +25,7 @@ export default function HygraphProductsPage() {
     }
 
     try {
-      const img = product.image?.url || '/images/4.png';
+      const img = product.imageUrl || '/images/4.png';
       await addToCart({
         productId: product.id,
         quantity: 1,
@@ -135,16 +59,17 @@ export default function HygraphProductsPage() {
           <div className="relative z-10 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/30 text-red-400 text-xs font-extrabold uppercase tracking-widest mb-4 border border-red-500/30">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              Hygraph Headless CMS Storefront
+              Secure Hygraph Headless CMS Proxy
             </div>
             <h1 className="text-3xl sm:text-5xl font-black italic tracking-tight mb-4">
               HYGRAPH FOOTWEAR COLLECTION
             </h1>
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 font-medium">
-              Seamlessly fetched in real-time via GraphQL from Hygraph Headless CMS using{' '}
+              Seamlessly fetched in real-time via RTK Query from your secure NestJS Backend REST API (
               <code className="bg-slate-800 px-2 py-1 rounded text-red-400 font-mono text-xs">
-                NEXT_PUBLIC_HYGRAPH_ENDPOINT
-              </code>.
+                GET /products
+              </code>
+              ). Hygraph credentials remain 100% hidden on the server.
             </p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -190,7 +115,7 @@ export default function HygraphProductsPage() {
         )}
 
         {/* Error State */}
-        {error && !loading && (
+        {isError && !loading && (
           <div className="bg-red-50 border border-red-200 text-red-800 rounded-3xl p-8 text-center max-w-xl mx-auto my-12 shadow-sm">
             <svg
               className="w-12 h-12 text-red-500 mx-auto mb-3"
@@ -205,23 +130,23 @@ export default function HygraphProductsPage() {
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
               />
             </svg>
-            <h3 className="text-lg font-bold mb-1">Failed to Connect to Hygraph</h3>
-            <p className="text-xs text-red-600 mb-6">{error}</p>
+            <h3 className="text-lg font-bold mb-1">Failed to Load Products</h3>
+            <p className="text-xs text-red-600 mb-6">Could not fetch product catalog from backend REST endpoint.</p>
             <button
-              onClick={fetchHygraphProducts}
+              onClick={() => refetch()}
               className="px-6 py-2.5 bg-red-600 text-white rounded-full font-bold text-xs hover:bg-red-700 shadow-md transition"
             >
-              Retry GraphQL Fetch
+              Retry
             </button>
           </div>
         )}
 
         {/* Empty State */}
-        {!loading && !error && filteredProducts.length === 0 && (
+        {!loading && !isError && filteredProducts.length === 0 && (
           <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-lg mx-auto shadow-sm">
             <h3 className="text-xl font-bold text-slate-800 mb-2">No Products Found</h3>
             <p className="text-sm text-slate-500 mb-6">
-              No items returned from Hygraph CMS under category &quot;{selectedCategory}&quot;.
+              No items returned under category &quot;{selectedCategory}&quot;.
             </p>
             <button
               onClick={() => setSelectedCategory('ALL')}
@@ -233,12 +158,10 @@ export default function HygraphProductsPage() {
         )}
 
         {/* Responsive Grid Layout (Tailwind CSS) */}
-        {!loading && !error && filteredProducts.length > 0 && (
+        {!loading && !isError && filteredProducts.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map((product) => {
-              const imageUrl =
-                product.image?.url ||
-                'https://ap-south-1.graphassets.com/cmt191cu400ij01uv8dfjb4yn/cmt1nxhjx04dv06o33s0ghwx7';
+              const imageUrl = product.imageUrl || '/images/4.png';
 
               return (
                 <div
@@ -333,3 +256,4 @@ export default function HygraphProductsPage() {
     </div>
   );
 }
+

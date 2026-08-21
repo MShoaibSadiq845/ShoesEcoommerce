@@ -1,4 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product, ProductDocument } from './product.schema';
@@ -72,9 +73,8 @@ export interface CreateProductDto {
 
 @Injectable()
 export class ProductsService implements OnModuleInit {
-  private readonly hygraphEndpoint = process.env.HYGRAPH_ENDPOINT;
-
   constructor(
+    private readonly configService: ConfigService,
     @InjectModel(Product.name) private productModel: Model<ProductDocument>,
   ) {}
 
@@ -86,41 +86,56 @@ export class ProductsService implements OnModuleInit {
     }
   }
 
-  async getProducts(): Promise<ProductDocument[]> {
-    // Try Hygraph first, fall back to MongoDB
-    if (this.hygraphEndpoint) {
+  async getProducts(): Promise<any[]> {
+    const hygraphEndpoint = this.configService.get<string>('HYGRAPH_ENDPOINT') || process.env.HYGRAPH_ENDPOINT;
+    const hygraphToken = this.configService.get<string>('HYGRAPH_TOKEN') || process.env.HYGRAPH_TOKEN;
+
+    if (hygraphEndpoint) {
       try {
         const query = `
-          query GetProducts {
-            products {
+          query GetHygraphProducts {
+            productsses {
               id
               name
               price
               description
               category
-              image { url }
+              tag
+              brand
+              image {
+                url
+              }
             }
           }
         `;
-        const response = await fetch(this.hygraphEndpoint, {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (hygraphToken) {
+          headers['Authorization'] = `Bearer ${hygraphToken}`;
+        }
+
+        const response = await fetch(hygraphEndpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ query }),
         });
+
         if (response.ok) {
           const json = await response.json();
-          if (json?.data?.products?.length > 0) {
-            return json.data.products.map((p: any, idx: number) => ({
+          const items = json?.data?.productsses || json?.data?.products || [];
+          if (items.length > 0) {
+            return items.map((p: any, idx: number) => ({
               _id: p.id || `hygraph-${idx}`,
               id: p.id || `hygraph-${idx}`,
               name: p.name,
-              price: p.price ?? 20.99,
+              price: Number(p.price ?? 20.99),
               description: p.description || '',
               category: p.category || 'FOOTWEAR',
               imageUrl: p.image?.url || SEED_PRODUCTS[idx % SEED_PRODUCTS.length].imageUrl,
-              tag: idx % 2 === 0 ? 'NEW' : 'FEATURED',
-              brand: 'NIKE',
-            })) as any;
+              tag: p.tag || (idx % 2 === 0 ? 'NEW' : 'FEATURED'),
+              brand: p.brand || 'NIKE',
+            }));
           }
         }
       } catch (err) {
