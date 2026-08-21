@@ -27,7 +27,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import { useGetCartQuery } from '../redux/cartApi';
+import { useGetCartQuery, useClearCartMutation, cartApi } from '../redux/cartApi';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { logout } from '../redux/authSlice';
 import toast from 'react-hot-toast';
@@ -48,6 +48,7 @@ export default function Navbar() {
 
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { data: cartData } = useGetCartQuery();
+  const [clearCart] = useClearCartMutation();
   const itemCount = cartData?.itemCount || 0;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -59,7 +60,13 @@ export default function Navbar() {
     router.push(href);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await clearCart().unwrap();
+    } catch (e) {
+      console.error('Error clearing cart on logout:', e);
+    }
+    dispatch(cartApi.util.resetApiState());
     dispatch(logout());
     toast.success('Logged out successfully');
     router.push('/');
